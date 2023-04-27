@@ -5,6 +5,8 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
 
+<?import javafx.scene.control.TreeTableColumn?>
+<?import javafx.scene.control.TreeTableView?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.demo.HelloController">
     <padding>
@@ -13,12 +15,13 @@
 
     <Button fx:id="generatePdfButton" onAction="#onGeneratePdfButtonClick" text="Générer PDF"/>
 
-    <TableView fx:id="tableView" layoutX="14" layoutY="14" prefHeight="200" prefWidth="300">
+    <TreeTableView fx:id="treeTableView" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="400.0">
         <columns>
-            <TableColumn fx:id="idColumn" prefWidth="75" text="ID" />
-            <TableColumn fx:id="nomColumn" prefWidth="100" text="Nom" />
+            <TreeTableColumn fx:id="nomColumn" prefWidth="100.0" text="Nom" />
+            <TreeTableColumn fx:id="libelleColumn" prefWidth="100.0" text="Categorie" />
+            <TreeTableColumn fx:id="capaciteMaxColumn" prefWidth="100.0" text="Capacité max" />
         </columns>
-    </TableView>
+    </TreeTableView>
 
 </VBox>
 

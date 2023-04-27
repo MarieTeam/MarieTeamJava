@@ -16,16 +16,29 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 public class HelloController {
-
     @FXML
     private Button generatePdfButton;
 
     @FXML
     private void onGeneratePdfButtonClick(ActionEvent event) {
-        // Obtenir la liste des bateaux à partir de la TableView
-        ObservableList<Bateau> bateaux = tableView.getItems();
+        // Obtenir la liste des bateaux à partir de la TreeTableView
+        TreeItem<Bateau> root = treeTableView.getRoot();
+        ObservableList<Bateau> bateaux = FXCollections.observableArrayList();
+
+        for (TreeItem<Bateau> bateauItem : root.getChildren()) {
+            bateaux.add(bateauItem.getValue());
+
+            for (TreeItem<Bateau> categorieItem : bateauItem.getChildren()) {
+                bateaux.add(categorieItem.getValue());
+            }
+        }
 
         try {
             // Générer le PDF
@@ -47,41 +60,97 @@ public class HelloController {
         }
     }
 
-    @FXML
-    private TableView<Bateau> tableView;
 
     @FXML
-    private TableColumn<Bateau, Integer> idColumn;
+    private TreeTableView<Bateau> treeTableView;
 
     @FXML
-    private TableColumn<Bateau, String> nomColumn;
+    private TreeTableColumn<Bateau, String> nomColumn;
 
+    @FXML
+    private TreeTableColumn<Bateau, String> libelleColumn;
+
+    @FXML
+    private TreeTableColumn<Bateau, Integer> capaciteMaxColumn;
     @FXML
     public void initialize() {
         // Configurez les colonnes de la table pour utiliser les propriétés des objets Bateau
-        idColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
-        nomColumn.setCellValueFactory(cellData -> cellData.getValue().nomProperty());
+        nomColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().nomProperty());
+        libelleColumn.setCellValueFactory(cellData -> {
+            Bateau bateau = cellData.getValue().getValue();
+            return bateau.getCategories().isEmpty() ? bateau.libelleProperty() : null;
+        });
+        capaciteMaxColumn.setCellValueFactory(cellData -> {
+            Bateau bateau = cellData.getValue().getValue();
+            return bateau.getCategories().isEmpty() ? bateau.capaciteMaxProperty().asObject() : null;
+        });
+        treeTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && newValue.getParent() != null && newValue.getParent().getValue() != null) {
+                libelleColumn.setVisible(true);
+                capaciteMaxColumn.setVisible(true);
+            } else {
+                libelleColumn.setVisible(false);
+                capaciteMaxColumn.setVisible(false);
+            }
+        });
 
-        // Charger les données des bateaux à partir de la base de données et les ajouter à la TableView
+
+        // Charger les données des bateaux à partir de la base de données et les ajouter à la TreeTableView
         loadBateauData();
+
+        libelleColumn.setVisible(false);
+        capaciteMaxColumn.setVisible(false);
+
     }
 
     private void loadBateauData() {
         try {
             Connection connection = DatabaseConnection.getConnection();
-            String query = "SELECT * FROM bateau"; // Remplacez "bateaux" par le nom de votre table des bateaux
+            String query = "SELECT DISTINCT b.id, b.nom, ca.libelle, c.capacite_max " +
+                    "FROM `Contenir` c " +
+                    "INNER JOIN Bateau b on b.id = c.id_bateau " +
+                    "INNER JOIN Categorie ca on ca.lettre = c.lettre_cat " +
+                    "ORDER BY b.nom";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             ResultSet resultSet = preparedStatement.executeQuery();
-            ObservableList<Bateau> bateaux = FXCollections.observableArrayList();
+
+            Map<Integer, Bateau> bateauxMap = new HashMap<>();
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String nom = resultSet.getString("nom");
-                Bateau bateau = new Bateau(id, nom);
-                bateaux.add(bateau);
+                String libelle = resultSet.getString("libelle");
+                int capaciteMax = resultSet.getInt("capacite_max");
+
+                Bateau bateau = bateauxMap.computeIfAbsent(id, k -> new Bateau(id, nom));
+                bateau.addCategorie(new Categorie(libelle, capaciteMax));
             }
 
-            tableView.setItems(bateaux);
+            TreeItem<Bateau> root = new TreeItem<>();
+            root.setExpanded(true);
+
+            for (Bateau bateau : bateauxMap.values()) {
+                TreeItem<Bateau> bateauItem = new TreeItem<>(bateau);
+                root.getChildren().add(bateauItem);
+
+                // Ajoutez un écouteur à la propriété expandedProperty de chaque TreeItem de bateau
+                bateauItem.expandedProperty().addListener((observable, oldValue, newValue) -> {
+                    if (newValue) {
+                        libelleColumn.setVisible(true);
+                        capaciteMaxColumn.setVisible(true);
+                    } else {
+                        libelleColumn.setVisible(false);
+                        capaciteMaxColumn.setVisible(false);
+                    }
+                });
+
+                for (Categorie categorie : bateau.getCategories()) {
+                    bateauItem.getChildren().add(new TreeItem<>(new Bateau(bateau.getId(), bateau.getNom(), categorie.getLibelle(), categorie.getCapaciteMax())));
+                }
+            }
+
+            treeTableView.setRoot(root);
+            treeTableView.setShowRoot(false);
 
             preparedStatement.close();
             resultSet.close();
@@ -90,4 +159,6 @@ public class HelloController {
             e.printStackTrace();
         }
     }
+
+
 }
