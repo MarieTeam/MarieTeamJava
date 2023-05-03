@@ -1,32 +1,25 @@
 package com.example.demo;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 
 public class Categorie {
-    private final StringProperty libelle;
-    private final IntegerProperty capaciteMax;
+    private final DoubleProperty longueurBat;
+    private final DoubleProperty largeurBat;
 
-    public Categorie(String libelle, int capaciteMax) {
-        this.libelle = new SimpleStringProperty(libelle);
-        this.capaciteMax = new SimpleIntegerProperty(capaciteMax);
+
+    public Categorie(double largeurBat, double longueurBat) {
+        this.longueurBat = new SimpleDoubleProperty(longueurBat);
+        this.largeurBat = new SimpleDoubleProperty(largeurBat);
     }
 
-    public String getLibelle() {
-        return libelle.get();
+    public Double getLongueurBat() { return longueurBat.get(); }
+    public DoubleProperty longueurBatProperty() {
+        return longueurBat;
+    }
+    public Double getLargeurBat() { return largeurBat.get(); }
+    public DoubleProperty largeurBatProperty() {
+        return largeurBat;
     }
 
-    public StringProperty libelleProperty() {
-        return libelle;
-    }
 
-    public int getCapaciteMax() {
-        return capaciteMax.get();
-    }
-
-    public IntegerProperty capaciteMaxProperty() {
-        return capaciteMax;
-    }
 }

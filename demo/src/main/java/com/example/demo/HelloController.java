@@ -68,29 +68,32 @@ public class HelloController {
     private TreeTableColumn<Bateau, String> nomColumn;
 
     @FXML
-    private TreeTableColumn<Bateau, String> libelleColumn;
+    private TreeTableColumn<Bateau, Double> longueurBatColumn;
 
     @FXML
-    private TreeTableColumn<Bateau, Integer> capaciteMaxColumn;
+    private TreeTableColumn<Bateau, Double> largeurBatColumn;
+
     @FXML
     public void initialize() {
         // Configurez les colonnes de la table pour utiliser les propriétés des objets Bateau
         nomColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().nomProperty());
-        libelleColumn.setCellValueFactory(cellData -> {
+        longueurBatColumn.setCellValueFactory(cellData -> {
             Bateau bateau = cellData.getValue().getValue();
-            return bateau.getCategories().isEmpty() ? bateau.libelleProperty() : null;
+            return bateau.getCategories().isEmpty() ? bateau.longueurBatProperty().asObject() : null;
         });
-        capaciteMaxColumn.setCellValueFactory(cellData -> {
+        largeurBatColumn.setCellValueFactory(cellData -> {
             Bateau bateau = cellData.getValue().getValue();
-            return bateau.getCategories().isEmpty() ? bateau.capaciteMaxProperty().asObject() : null;
+            return bateau.getCategories().isEmpty() ? bateau.largeurBatProperty().asObject() : null;
         });
+
+
         treeTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getParent() != null && newValue.getParent().getValue() != null) {
-                libelleColumn.setVisible(true);
-                capaciteMaxColumn.setVisible(true);
+                longueurBatColumn.setVisible(true);
+                largeurBatColumn.setVisible(true);
             } else {
-                libelleColumn.setVisible(false);
-                capaciteMaxColumn.setVisible(false);
+                longueurBatColumn.setVisible(false);
+                largeurBatColumn.setVisible(false);
             }
         });
 
@@ -98,19 +101,19 @@ public class HelloController {
         // Charger les données des bateaux à partir de la base de données et les ajouter à la TreeTableView
         loadBateauData();
 
-        libelleColumn.setVisible(false);
-        capaciteMaxColumn.setVisible(false);
+        largeurBatColumn.setVisible(false);
+        longueurBatColumn.setVisible(false);
 
     }
 
     private void loadBateauData() {
         try {
             Connection connection = DatabaseConnection.getConnection();
-            String query = "SELECT DISTINCT b.id, b.nom, ca.libelle, c.capacite_max " +
+            String query = "SELECT DISTINCT b.id, b.nom, b.longueurBat, b.largeurBat " +
                     "FROM `Contenir` c " +
                     "INNER JOIN Bateau b on b.id = c.id_bateau " +
-                    "INNER JOIN Categorie ca on ca.lettre = c.lettre_cat " +
                     "ORDER BY b.nom";
+
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -119,11 +122,10 @@ public class HelloController {
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String nom = resultSet.getString("nom");
-                String libelle = resultSet.getString("libelle");
-                int capaciteMax = resultSet.getInt("capacite_max");
+                double longueurBat = resultSet.getDouble("longueurBat");
+                double largeurBat = resultSet.getDouble("largeurBat");
 
-                Bateau bateau = bateauxMap.computeIfAbsent(id, k -> new Bateau(id, nom));
-                bateau.addCategorie(new Categorie(libelle, capaciteMax));
+                Bateau bateau = bateauxMap.computeIfAbsent(id, k -> new Bateau(id, nom, longueurBat, largeurBat));
             }
 
             TreeItem<Bateau> root = new TreeItem<>();
@@ -132,21 +134,6 @@ public class HelloController {
             for (Bateau bateau : bateauxMap.values()) {
                 TreeItem<Bateau> bateauItem = new TreeItem<>(bateau);
                 root.getChildren().add(bateauItem);
-
-                // Ajoutez un écouteur à la propriété expandedProperty de chaque TreeItem de bateau
-                bateauItem.expandedProperty().addListener((observable, oldValue, newValue) -> {
-                    if (newValue) {
-                        libelleColumn.setVisible(true);
-                        capaciteMaxColumn.setVisible(true);
-                    } else {
-                        libelleColumn.setVisible(false);
-                        capaciteMaxColumn.setVisible(false);
-                    }
-                });
-
-                for (Categorie categorie : bateau.getCategories()) {
-                    bateauItem.getChildren().add(new TreeItem<>(new Bateau(bateau.getId(), bateau.getNom(), categorie.getLibelle(), categorie.getCapaciteMax())));
-                }
             }
 
             treeTableView.setRoot(root);
@@ -159,6 +146,4 @@ public class HelloController {
             e.printStackTrace();
         }
     }
-
-
 }

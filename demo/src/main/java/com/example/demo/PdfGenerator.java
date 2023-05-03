@@ -7,7 +7,6 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
 
@@ -22,21 +21,31 @@ public class PdfGenerator {
         document.add(new Paragraph("Liste des bateaux"));
 
         // Créez un tableau pour les informations des bateaux
-        Table table = new Table(new float[]{1, 1});
-        table.setWidth(UnitValue.createPercentValue(100)); // Change this line
+        Table table = new Table(new float[]{1, 1, 1, 1});
+        table.setWidth(UnitValue.createPercentValue(100));
         table.addHeaderCell("ID");
         table.addHeaderCell("Nom");
+        table.addHeaderCell("Longueur");
+        table.addHeaderCell("Largeur");
 
         // Ajoutez les informations des bateaux au tableau
+        String nomPrecedent = "";
         for (Bateau bateau : bateaux) {
-            table.addCell(Integer.toString(bateau.getId()));
-            table.addCell(bateau.getNom());
+            if (!bateau.getNom().equals(nomPrecedent)) {
+                table.addCell(Integer.toString(bateau.getId()));
+                table.addCell(bateau.getNom());
+                nomPrecedent = bateau.getNom();
+            } else {
+                table.addCell("");
+                table.addCell("");
+            }
+            table.addCell(Double.toString(bateau.getLongueurBat()));
+            table.addCell(Double.toString(bateau.getLargeurBat()));
         }
+
         // Ajoutez le tableau au document PDF
         document.add(table);
         // Fermez le document
         document.close();
     }
-
-
 }

@@ -1,6 +1,8 @@
 package com.example.demo;
 
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -11,23 +13,23 @@ import java.util.List;
 public class Bateau {
     private final IntegerProperty id;
     private final StringProperty nom;
-    private final StringProperty libelle;
-    private final IntegerProperty capaciteMax;
+    private final DoubleProperty longueurBat;
+    private final DoubleProperty largeurBat;
     private final List<Categorie> categories;
 
     public Bateau(int id, String nom) {
         this.id = new SimpleIntegerProperty(id);
         this.nom = new SimpleStringProperty(nom);
-        this.libelle = new SimpleStringProperty();
-        this.capaciteMax = new SimpleIntegerProperty();
+        this.largeurBat = new SimpleDoubleProperty();
+        this.longueurBat = new SimpleDoubleProperty();
         this.categories = new ArrayList<>();
     }
 
-    public Bateau(int id, String nom, String libelle, int capaciteMax) {
+    public Bateau(int id, String nom, double longueurBat, double largeurBat) {
         this.id = new SimpleIntegerProperty(id);
         this.nom = new SimpleStringProperty(nom);
-        this.libelle = new SimpleStringProperty(libelle);
-        this.capaciteMax = new SimpleIntegerProperty(capaciteMax);
+        this.longueurBat = new SimpleDoubleProperty(longueurBat);
+        this.largeurBat = new SimpleDoubleProperty(largeurBat);
         this.categories = new ArrayList<>();
     }
 
@@ -47,20 +49,20 @@ public class Bateau {
         return nom;
     }
 
-    public String getLibelle() {
-        return libelle.get();
+    public double getLongueurBat() {
+        return longueurBat.get();
     }
 
-    public StringProperty libelleProperty() {
-        return libelle;
+    public DoubleProperty longueurBatProperty() {
+        return longueurBat;
     }
 
-    public int getCapaciteMax() {
-        return capaciteMax.get();
+    public double getLargeurBat() {
+        return largeurBat.get();
     }
 
-    public IntegerProperty capaciteMaxProperty() {
-        return capaciteMax;
+    public DoubleProperty largeurBatProperty() {
+        return largeurBat;
     }
 
     public List<Categorie> getCategories() {
