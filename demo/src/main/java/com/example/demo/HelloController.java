@@ -76,6 +76,9 @@ public class HelloController {
 
     @FXML
     private TreeTableColumn<Bateau, Double> largeurBatColumn;
+    @FXML
+    private TreeTableColumn<Bateau, Double> vitesseBatVoyColumn;
+
 
     @FXML
     public void initialize() {
@@ -89,15 +92,22 @@ public class HelloController {
             Bateau bateau = cellData.getValue().getValue();
             return bateau.getCategories().isEmpty() ? bateau.largeurBatProperty().asObject() : null;
         });
+        vitesseBatVoyColumn.setCellValueFactory(cellData -> {
+            Bateau bateau = cellData.getValue().getValue();
+            return bateau instanceof BateauVoyageur ? ((BateauVoyageur) bateau).vitesseBatVoyProperty().asObject() : null;
+        });
+
 
 
         treeTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getParent() != null && newValue.getParent().getValue() != null) {
                 longueurBatColumn.setVisible(true);
                 largeurBatColumn.setVisible(true);
+                vitesseBatVoyColumn.setVisible(true);
             } else {
                 longueurBatColumn.setVisible(false);
                 largeurBatColumn.setVisible(false);
+                vitesseBatVoyColumn.setVisible(false);
             }
         });
 
@@ -107,6 +117,7 @@ public class HelloController {
 
         largeurBatColumn.setVisible(false);
         longueurBatColumn.setVisible(false);
+        vitesseBatVoyColumn.setVisible(false);
 
     }
 
