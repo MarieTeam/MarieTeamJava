@@ -1,11 +1,17 @@
 package com.example.demo;
 
+import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.layout.element.Image;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -15,37 +21,50 @@ public class PdfGenerator {
     public static void createPdf(String destination, List<Bateau> bateaux) throws FileNotFoundException {
         PdfWriter writer = new PdfWriter(destination);
         PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
+        Document document = new Document(pdf, PageSize.A4.rotate());
 
-        // Ajoutez un titre au document PDF
+        // Add a title to the PDF document
         document.add(new Paragraph("Liste des bateaux"));
 
-        // Créez un tableau pour les informations des bateaux
-        Table table = new Table(new float[]{1, 1, 1, 1});
-        table.setWidth(UnitValue.createPercentValue(100));
-        table.addHeaderCell("ID");
-        table.addHeaderCell("Nom");
-        table.addHeaderCell("Longueur");
-        table.addHeaderCell("Largeur");
+        // Define the number of columns for the grid
+        int numColumns = 3;
 
-        // Ajoutez les informations des bateaux au tableau
-        String nomPrecedent = "";
+        // Create a table for the boat cards
+        Table table = new Table(numColumns);
+        table.setWidth(UnitValue.createPercentValue(100));
+
         for (Bateau bateau : bateaux) {
-            if (!bateau.getNom().equals(nomPrecedent)) {
-                table.addCell(Integer.toString(bateau.getId()));
-                table.addCell(bateau.getNom());
-                nomPrecedent = bateau.getNom();
-            } else {
-                table.addCell("");
-                table.addCell("");
+            // Create a cell for each boat card
+            Cell cell = new Cell();
+            cell.setPadding(10);
+
+            // Add boat information to the cell
+            cell.add(new Paragraph("Nom: " + bateau.getNom()));
+            cell.add(new Paragraph("Longueur: " + bateau.getLongueurBat() + "m"));
+            cell.add(new Paragraph("Largeur: " + bateau.getLargeurBat() + "m"));
+
+            // Check if the current boat is an instance of BateauVoyageur
+            if (bateau instanceof BateauVoyageur) {
+                BateauVoyageur bateauVoyageur = (BateauVoyageur) bateau;
+                cell.add(new Paragraph("Vitesse: " + bateauVoyageur.getVitesseBatVoy() + " km/h"));
+
+                // Load the image from the URL and add it to the cell
+                try {
+                    ImageData imageData = ImageDataFactory.create(bateauVoyageur.getImageBatVoy());
+                    Image image = new Image(imageData);
+                    image.setWidth(UnitValue.createPercentValue(100));
+                    cell.add(image);
+                } catch (Exception e) {
+                    cell.add(new Paragraph("Erreur lors du chargement de l'image"));
+                }
             }
-            table.addCell(Double.toString(bateau.getLongueurBat()));
-            table.addCell(Double.toString(bateau.getLargeurBat()));
+            // Add the cell to the table
+            table.addCell(cell);
         }
 
-        // Ajoutez le tableau au document PDF
+        // Add the table to the PDF document
         document.add(table);
-        // Fermez le document
+        // Close the document
         document.close();
     }
 }

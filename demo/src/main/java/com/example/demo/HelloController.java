@@ -1,5 +1,9 @@
 package com.example.demo;
 
+import com.example.demo.Bateau;
+import com.example.demo.BateauVoyageur;
+import com.example.demo.DatabaseConnection;
+import com.example.demo.PdfGenerator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,16 +16,16 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+
+import static com.example.demo.DatabaseConnection.*;
+
 public class HelloController {
     @FXML
     private Button generatePdfButton;
@@ -107,43 +111,32 @@ public class HelloController {
     }
 
     private void loadBateauData() {
-        try {
-            Connection connection = DatabaseConnection.getConnection();
-            String query = "SELECT DISTINCT b.id, b.nom, b.longueurBat, b.largeurBat " +
-                    "FROM `Contenir` c " +
-                    "INNER JOIN Bateau b on b.id = c.id_bateau " +
-                    "ORDER BY b.nom";
+        String sql = "SELECT b.id, b.nom, b.longueurBat, b.largeurBat, bv.vitesseBatVoy, bv.imageBatVoy " +
+                "FROM Bateau b " +
+                "JOIN bateauVoyageur bv ON b.id = bv.id";
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
 
-            Map<Integer, Bateau> bateauxMap = new HashMap<>();
+            TreeItem<Bateau> root = new TreeItem<>(new Bateau(0, "Bateaux", 0, 0));
+            root.setExpanded(true);
+            treeTableView.setRoot(root);
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String nom = resultSet.getString("nom");
                 double longueurBat = resultSet.getDouble("longueurBat");
                 double largeurBat = resultSet.getDouble("largeurBat");
+                double vitesseBatVoy = resultSet.getDouble("vitesseBatVoy");
+                String imageBatVoy = resultSet.getString("imageBatVoy");
 
-                Bateau bateau = bateauxMap.computeIfAbsent(id, k -> new Bateau(id, nom, longueurBat, largeurBat));
-            }
-
-            TreeItem<Bateau> root = new TreeItem<>();
-            root.setExpanded(true);
-
-            for (Bateau bateau : bateauxMap.values()) {
-                TreeItem<Bateau> bateauItem = new TreeItem<>(bateau);
+                BateauVoyageur bateauVoyageur = new BateauVoyageur(id, nom, longueurBat, largeurBat, vitesseBatVoy, imageBatVoy);
+                TreeItem<Bateau> bateauItem = new TreeItem<>(bateauVoyageur);
                 root.getChildren().add(bateauItem);
             }
-
-            treeTableView.setRoot(root);
-            treeTableView.setShowRoot(false);
-
-            preparedStatement.close();
-            resultSet.close();
         } catch (SQLException e) {
-            System.out.println("Erreur lors du chargement des données des bateaux.");
-            e.printStackTrace();
+
         }
     }
 }

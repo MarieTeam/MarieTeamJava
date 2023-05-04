@@ -5,6 +5,7 @@ module com.example.demo {
     requires kernel;
     requires layout;
     requires java.desktop;
+    requires io;
 
 
     opens com.example.demo to javafx.fxml;
