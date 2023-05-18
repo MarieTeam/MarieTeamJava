@@ -1,0 +1,19 @@
+.my-vbox .tree-table-cell {
+    -fx-border-color: black;
+    -fx-border-width: 1px;
+}
+
+.my-tree-table-view .column-header {
+    -fx-border-color: black;
+    -fx-border-width: 1px;
+}
+
+.my-tree-table-view .table-row-cell {
+    -fx-border-color: black;
+    -fx-border-width: 1px;
+}
+
+.my-tree-table-view .table-cell {
+    -fx-border-color: black;
+    -fx-border-width: 1px;
+}

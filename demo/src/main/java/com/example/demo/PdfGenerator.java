@@ -5,7 +5,6 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
@@ -47,19 +46,26 @@ public class PdfGenerator {
             if (bateau instanceof BateauVoyageur) {
                 BateauVoyageur bateauVoyageur = (BateauVoyageur) bateau;
                 cell.add(new Paragraph("Vitesse: " + bateauVoyageur.getVitesseBatVoy() + " km/h"));
+                List<Equipement> equipements = bateauVoyageur.getEquipements();
+                if (!equipements.isEmpty()) {
+                    cell.add(new Paragraph("Équipements:"));
+                    for (Equipement equipement : equipements) {
+                        cell.add(new Paragraph("- " + equipement.getLibEquip()));
+                    }
 
-                // Load the image from the URL and add it to the cell
-                try {
-                    ImageData imageData = ImageDataFactory.create(bateauVoyageur.getImageBatVoy());
-                    Image image = new Image(imageData);
-                    image.setWidth(UnitValue.createPercentValue(100));
-                    cell.add(image);
-                } catch (Exception e) {
-                    cell.add(new Paragraph("Erreur lors du chargement de l'image"));
+                    // Load the image from the URL and add it to the cell
+                    try {
+                        ImageData imageData = ImageDataFactory.create(bateauVoyageur.getImageBatVoy());
+                        Image image = new Image(imageData);
+                        image.setWidth(UnitValue.createPercentValue(100));
+                        cell.add(image);
+                    } catch (Exception e) {
+                        cell.add(new Paragraph("Erreur lors du chargement de l'image"));
+                    }
                 }
+                // Add the cell to the table
+                table.addCell(cell);
             }
-            // Add the cell to the table
-            table.addCell(cell);
         }
 
         // Add the table to the PDF document
@@ -68,3 +74,4 @@ public class PdfGenerator {
         document.close();
     }
 }
+

@@ -4,13 +4,13 @@ import com.example.demo.Bateau;
 import com.example.demo.BateauVoyageur;
 import com.example.demo.DatabaseConnection;
 import com.example.demo.PdfGenerator;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -18,11 +18,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableView;
+import java.util.stream.Collectors;
+import javafx.scene.layout.VBox;
 
 import static com.example.demo.DatabaseConnection.*;
 
@@ -78,6 +77,8 @@ public class HelloController {
     private TreeTableColumn<Bateau, Double> largeurBatColumn;
     @FXML
     private TreeTableColumn<Bateau, Double> vitesseBatVoyColumn;
+    @FXML
+    private TreeTableColumn<Bateau, String> equipementsColumn;
 
 
     @FXML
@@ -96,21 +97,68 @@ public class HelloController {
             Bateau bateau = cellData.getValue().getValue();
             return bateau instanceof BateauVoyageur ? ((BateauVoyageur) bateau).vitesseBatVoyProperty().asObject() : null;
         });
+        equipementsColumn.setCellValueFactory(cellData -> {
+            Bateau bateau = cellData.getValue().getValue();
+            if (bateau instanceof BateauVoyageur) {
+                BateauVoyageur bateauVoyageur = (BateauVoyageur) bateau;
+                List<Equipement> equipements = bateauVoyageur.getEquipements();
+                if (bateauVoyageur.showAllEquipmentsProperty().get() || equipements.size() <= 3) {
+                    String equipementsString = equipements.stream()
+                            .map(Equipement::getLibEquip)
+                            .collect(Collectors.joining("\n"));
+                    return new SimpleStringProperty(equipementsString);
+                } else {
+                    String equipementsString = equipements.subList(0, 1).stream()
+                            .map(Equipement::getLibEquip)
+                            .collect(Collectors.joining("\n"));
+                    return new SimpleStringProperty(equipementsString + "\n...(plus)");
+                }
+            }
+            return null;
+        });
 
+        equipementsColumn.setCellFactory(column -> {
+            return new TreeTableCell<Bateau, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
 
+                    if (item == null || empty) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        setText(item);
+                        setOnMouseClicked(event -> {
+                            Bateau bateau = getTreeTableRow().getItem();
+                            if (bateau instanceof BateauVoyageur) {
+                                BateauVoyageur bateauVoyageur = (BateauVoyageur) bateau;
+                                if (item.endsWith("...(plus)")) {
+                                    bateauVoyageur.showAllEquipmentsProperty().set(true);
+                                } else {
+                                    bateauVoyageur.showAllEquipmentsProperty().set(false);
+                                }
+                                // Forcer la mise à jour de la table
+                                treeTableView.refresh();
+                            }
+                        });
+                    }
+                }
+            };
+        });
 
         treeTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getParent() != null && newValue.getParent().getValue() != null) {
                 longueurBatColumn.setVisible(true);
                 largeurBatColumn.setVisible(true);
                 vitesseBatVoyColumn.setVisible(true);
+                equipementsColumn.setVisible(true);
             } else {
                 longueurBatColumn.setVisible(false);
                 largeurBatColumn.setVisible(false);
                 vitesseBatVoyColumn.setVisible(false);
+                equipementsColumn.setVisible(false);
             }
         });
-
 
         // Charger les données des bateaux à partir de la base de données et les ajouter à la TreeTableView
         loadBateauData();
@@ -118,13 +166,14 @@ public class HelloController {
         largeurBatColumn.setVisible(false);
         longueurBatColumn.setVisible(false);
         vitesseBatVoyColumn.setVisible(false);
-
+        equipementsColumn.setVisible(false);
     }
 
     private void loadBateauData() {
-        String sql = "SELECT b.id, b.nom, b.longueurBat, b.largeurBat, bv.vitesseBatVoy, bv.imageBatVoy " +
+        String sql = "SELECT b.id, b.nom, b.longueurBat, b.largeurBat, bv.vitesseBatVoy, bv.imageBatVoy, e.idEquip, e.libEquip " +
                 "FROM Bateau b " +
-                "JOIN bateauVoyageur bv ON b.id = bv.id";
+                "JOIN bateauVoyageur bv ON b.id = bv.id " +
+                "LEFT JOIN Equipement e ON bv.id = e.idBatVoy";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -134,6 +183,8 @@ public class HelloController {
             root.setExpanded(true);
             treeTableView.setRoot(root);
 
+            Map<Integer, BateauVoyageur> bateaux = new HashMap<>();
+
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String nom = resultSet.getString("nom");
@@ -142,12 +193,25 @@ public class HelloController {
                 double vitesseBatVoy = resultSet.getDouble("vitesseBatVoy");
                 String imageBatVoy = resultSet.getString("imageBatVoy");
 
-                BateauVoyageur bateauVoyageur = new BateauVoyageur(id, nom, longueurBat, largeurBat, vitesseBatVoy, imageBatVoy);
-                TreeItem<Bateau> bateauItem = new TreeItem<>(bateauVoyageur);
-                root.getChildren().add(bateauItem);
+                // Check if the BateauVoyageur already exists
+                BateauVoyageur bateauVoyageur = bateaux.get(id);
+                if (bateauVoyageur == null) {
+                    bateauVoyageur = new BateauVoyageur(id, nom, longueurBat, largeurBat, vitesseBatVoy, imageBatVoy);
+                    bateaux.put(id, bateauVoyageur);
+
+                    TreeItem<Bateau> bateauItem = new TreeItem<>(bateauVoyageur);
+                    root.getChildren().add(bateauItem);
+                }
+
+                // Add the equipement to the BateauVoyageur
+                int idEquip = resultSet.getInt("idEquip");
+                String libEquip = resultSet.getString("libEquip");
+                int idBatVoy = resultSet.getInt("id"); // Assuming "id" is the idBatVoy in the Equipement table
+                Equipement equipement = new Equipement(idEquip, libEquip, idBatVoy);
+                bateauVoyageur.addEquipement(equipement);
             }
         } catch (SQLException e) {
-
+            // handle the exception
         }
     }
 }
