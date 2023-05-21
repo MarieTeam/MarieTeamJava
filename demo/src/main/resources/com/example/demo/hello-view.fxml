@@ -14,14 +14,16 @@
     </padding>
 
     <Button fx:id="generatePdfButton" onAction="#onGeneratePdfButtonClick" text="Générer PDF"/>
+    <Button fx:id="editButton" onAction="#onEditButtonClick" text="Modifier Bateau"/>
+    <Button fx:id="deleteButton" onAction="#onDeleteButtonClick" text="Supprimer Bateau"/>
 
     <TreeTableView fx:id="treeTableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="700.0">
         <columns>
-            <TreeTableColumn fx:id="nomColumn" prefWidth="100.0" text="Nom" />
+            <TreeTableColumn fx:id="nomColumn" prefWidth="200.0" text="Nom" />
             <TreeTableColumn fx:id="longueurBatColumn" text="Longueur (m)" prefWidth="100" />
             <TreeTableColumn fx:id="largeurBatColumn" text="Largeur (m)" prefWidth="100" />
             <TreeTableColumn fx:id="vitesseBatVoyColumn" text="Vitesse (noeud)" prefWidth="100" />
-            <TreeTableColumn fx:id="equipementsColumn" text="Équipements" prefWidth="200" />
+            <TreeTableColumn fx:id="equipementsColumn" text="Équipements" prefWidth="400" />
         </columns>
     </TreeTableView>
 

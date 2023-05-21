@@ -1,19 +1,54 @@
-.my-vbox .tree-table-cell {
-    -fx-border-color: black;
-    -fx-border-width: 1px;
+/* Global Styles */
+.root {
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER;
 }
 
-.my-tree-table-view .column-header {
-    -fx-border-color: black;
-    -fx-border-width: 1px;
+.button {
+    -fx-background-color: #2d64b3;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
 }
 
-.my-tree-table-view .table-row-cell {
-    -fx-border-color: black;
-    -fx-border-width: 1px;
+.button:hover {
+    -fx-background-color: #1a4175;
 }
 
-.my-tree-table-view .table-cell {
-    -fx-border-color: black;
-    -fx-border-width: 1px;
+/* Style for TableView */
+.tree-table-view {
+    -fx-background-color: #F3F3F3;
+}
+
+.tree-table-column {
+    -fx-background-color: #B3B3B3;
+    -fx-text-fill: #333333;
+    -fx-alignment: CENTER;
+}
+
+.tree-table-row-cell {
+    -fx-border-color: #D3D3D3;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tree-table-row-cell:odd {
+    -fx-background-color: #EFEFEF;
+}
+
+.tree-table-row-cell:even {
+    -fx-background-color: #FFFFFF;
+}
+
+.tree-table-view .column-header {
+    -fx-background-color: #A9A9A9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+/* Style pour la ligne sélectionnée */
+.tree-table-row-cell:selected {
+    -fx-background-color: grey;
+    -fx-text-fill: black;
 }

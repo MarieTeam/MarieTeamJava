@@ -1,18 +1,24 @@
 package com.example.demo;
 
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.UnitValue;
-import com.itextpdf.io.image.ImageData;
-import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.layout.element.Image;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 public class PdfGenerator {
@@ -22,8 +28,26 @@ public class PdfGenerator {
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf, PageSize.A4.rotate());
 
+        // Defining fonts to be used
+        PdfFont fontTitle;
+        PdfFont fontDefault;
+
+        try {
+            fontTitle = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+            fontDefault = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la création des polices : " + e.getMessage());
+            return;
+        }
+
         // Add a title to the PDF document
-        document.add(new Paragraph("Liste des bateaux"));
+        Paragraph title = new Paragraph("Liste des bateaux")
+                .setFont(fontTitle)
+                .setFontSize(24)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setUnderline()
+                .setFixedLeading(50);
+        document.add(title);
 
         // Define the number of columns for the grid
         int numColumns = 3;
@@ -38,19 +62,19 @@ public class PdfGenerator {
             cell.setPadding(10);
 
             // Add boat information to the cell
-            cell.add(new Paragraph("Nom: " + bateau.getNom()));
-            cell.add(new Paragraph("Longueur: " + bateau.getLongueurBat() + "m"));
-            cell.add(new Paragraph("Largeur: " + bateau.getLargeurBat() + "m"));
+            cell.add(new Paragraph("" + bateau.getNom()).setFont(fontDefault).setTextAlignment(TextAlignment.CENTER).setFontSize(18).setBold().setFontColor(ColorConstants.BLACK));
+            cell.add(new Paragraph("Longueur: " + bateau.getLongueurBat() + "m").setFont(fontDefault));
+            cell.add(new Paragraph("Largeur: " + bateau.getLargeurBat() + "m").setFont(fontDefault));
 
             // Check if the current boat is an instance of BateauVoyageur
             if (bateau instanceof BateauVoyageur) {
                 BateauVoyageur bateauVoyageur = (BateauVoyageur) bateau;
-                cell.add(new Paragraph("Vitesse: " + bateauVoyageur.getVitesseBatVoy() + " km/h"));
+                cell.add(new Paragraph("Vitesse: " + bateauVoyageur.getVitesseBatVoy() + " km/h").setFont(fontDefault));
                 List<Equipement> equipements = bateauVoyageur.getEquipements();
                 if (!equipements.isEmpty()) {
-                    cell.add(new Paragraph("Équipements:"));
+                    cell.add(new Paragraph("Équipements:").setFont(fontDefault).setFontSize(12).setBold());
                     for (Equipement equipement : equipements) {
-                        cell.add(new Paragraph("- " + equipement.getLibEquip()));
+                        cell.add(new Paragraph("- " + equipement.getLibEquip()).setFont(fontDefault));
                     }
 
                     // Load the image from the URL and add it to the cell
@@ -74,4 +98,3 @@ public class PdfGenerator {
         document.close();
     }
 }
-

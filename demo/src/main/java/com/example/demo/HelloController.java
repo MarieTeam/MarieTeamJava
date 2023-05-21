@@ -9,6 +9,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 
@@ -22,10 +24,64 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import static com.example.demo.DatabaseConnection.*;
 
 public class HelloController {
+    @FXML
+    private Button addButton, editButton, deleteButton;
+
+    @FXML
+    private void onAddButtonClick(ActionEvent event) throws IOException {
+        BateauVoyageur bateau = new BateauVoyageur(0, "Nouveau bateau", 0, 0, 0, null); // Remplacer par des valeurs réelles si nécessaire
+        openBateauForm(bateau);
+        if (bateau.getNom() != null) {
+            bateaux.add(bateau);
+            TreeItem<Bateau> bateauItem = new TreeItem<>(bateau);
+            treeTableView.getRoot().getChildren().add(bateauItem);
+        }
+    }
+
+
+    @FXML
+    private void onEditButtonClick(ActionEvent event) throws IOException {
+        Bateau selectedBateau = treeTableView.getSelectionModel().getSelectedItem().getValue();
+        if (selectedBateau instanceof BateauVoyageur) {
+            BateauVoyageur bateau = (BateauVoyageur) selectedBateau;
+            openBateauForm(bateau);
+        }
+    }
+
+
+    private void openBateauForm(BateauVoyageur bateau) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/demo/BateauForm.fxml"));
+        Parent root = loader.load();
+        BateauFormController controller = loader.getController();
+        controller.setBateau(bateau);
+
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(new Scene(root));
+        stage.showAndWait();
+    }
+
+    @FXML
+    private void onDeleteButtonClick(ActionEvent event) {
+        // Supprimer le bateau sélectionné
+        TreeItem<Bateau> selected = treeTableView.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            // Vous pouvez montrer un dialogue pour confirmer la suppression
+            treeTableView.getRoot().getChildren().remove(selected);
+            bateaux.remove(selected.getValue());
+        }
+    }
+    private final ObservableList<Bateau> bateaux = FXCollections.observableArrayList();
+
+    @FXML
+    private TreeTableView<Bateau> treeTableView;
+
     @FXML
     private Button generatePdfButton;
 
@@ -64,8 +120,7 @@ public class HelloController {
     }
 
 
-    @FXML
-    private TreeTableView<Bateau> treeTableView;
+
 
     @FXML
     private TreeTableColumn<Bateau, String> nomColumn;

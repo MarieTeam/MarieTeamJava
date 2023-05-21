@@ -44,6 +44,10 @@ public class Bateau {
     public String getNom() {
         return nom.get();
     }
+    public void setNom(String nom) {
+        this.nom.set(nom);
+    }
+
 
     public StringProperty nomProperty() {
         return nom;
@@ -56,9 +60,15 @@ public class Bateau {
     public DoubleProperty longueurBatProperty() {
         return longueurBat;
     }
+    public void setLongueurBat(double longueurBat) {
+        this.longueurBat.set(longueurBat);
+    }
 
     public double getLargeurBat() {
         return largeurBat.get();
+    }
+    public void setLargeurBat(double largeurBat) {
+        this.largeurBat.set(largeurBat);
     }
 
     public DoubleProperty largeurBatProperty() {

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.demo.BateauFormController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+
+    <TextField fx:id="nomField" promptText="Nom"/>
+    <TextField fx:id="longueurBatField" promptText="Longueur"/>
+    <TextField fx:id="largeurBatField" promptText="Largeur"/>
+    <TextField fx:id="vitesseBatVoyField" promptText="Vitesse"/>
+    <TextField fx:id="newEquipementField" promptText="Nouvel Equipement"/>
+    <Button fx:id="addNewEquipementButton" onAction="#onAddNewEquipementButtonClick" text="Ajouter Nouvel Equipement"/>
+
+
+    <ComboBox fx:id="equipementAvailableList" />
+    <Button fx:id="addButton" onAction="#onAddButtonClick" text="Ajouter Equipement"/>
+    <Button fx:id="removeButton" onAction="#onRemoveButtonClick" text="Retirer Equipement"/>
+
+    <ListView fx:id="equipementList" />
+
+    <Button fx:id="saveButton" onAction="#onSaveButtonClick" text="Enregistrer"/>
+</VBox>

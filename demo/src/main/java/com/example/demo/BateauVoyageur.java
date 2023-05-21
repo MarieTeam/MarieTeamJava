@@ -47,6 +47,9 @@ import java.util.stream.Collectors;
         public double getVitesseBatVoy() {
             return vitesseBatVoy.get();
         }
+        public void setVitesseBatVoy(double vitesseBatVoy) {
+            this.vitesseBatVoy.set(vitesseBatVoy);
+        }
 
         public DoubleProperty vitesseBatVoyProperty() {
             return vitesseBatVoy;
